@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>NestJS Chat</title>
+    <title>NestJS Chat Rooms</title>
     <style>
       body {
         font-family: sans-serif;
@@ -13,6 +13,7 @@
         padding: 10px;
         height: 300px;
         overflow-y: auto;
+        margin-bottom: 10px;
       }
       .message {
         margin-bottom: 10px;
@@ -23,16 +24,26 @@
     </style>
   </head>
   <body>
-    <h2>Chat</h2>
-
-    <div id="chat"></div>
+    <h2>Chat with Rooms</h2>
 
     <input
       type="text"
       id="username"
       placeholder="Username"
-      style="width: 100%; margin: 10px 0"
+      style="width: 100%; margin-bottom: 10px"
     />
+    <input
+      type="text"
+      id="room"
+      placeholder="Room name (e.g. general)"
+      style="width: 100%; margin-bottom: 10px"
+    />
+    <button id="joinBtn" style="width: 100%; margin-bottom: 10px">
+      Join Room
+    </button>
+
+    <div id="chat"></div>
+
     <input
       type="text"
       id="messageInput"
@@ -40,21 +51,27 @@
       style="width: 80%"
     />
     <button id="sendBtn">Send</button>
+    <button id="leaveBtn">Leave room</button>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
-      const socket = io('http://localhost:3000'); // adjust port if needed
+      const socket = io('http://localhost:3000'); // adjust if needed
 
       const chatBox = document.getElementById('chat');
       const usernameInput = document.getElementById('username');
+      const roomInput = document.getElementById('room');
       const messageInput = document.getElementById('messageInput');
       const sendBtn = document.getElementById('sendBtn');
+      const joinBtn = document.getElementById('joinBtn');
+      const leaveBtn = document.getElementById('leaveBtn');
+
+      let currentRoom = null;
 
       socket.on('connect', () => {
         console.log('Connected:', socket.id);
       });
 
-      // Display incoming messages
+      // Handle messages from the server
       socket.on('message', (data) => {
         const messageEl = document.createElement('div');
         messageEl.classList.add('message');
@@ -63,13 +80,31 @@
         chatBox.scrollTop = chatBox.scrollHeight;
       });
 
+      joinBtn.addEventListener('click', () => {
+        const username = usernameInput.value.trim();
+        const room = roomInput.value.trim();
+
+        if (!username || !room) {
+          alert('Enter username and room name');
+          return;
+        }
+
+        currentRoom = room;
+        chatBox.innerHTML = ''; // clear previous chat
+
+        socket.emit('joinRoom', { username, room });
+      });
+
       sendBtn.addEventListener('click', () => {
         const message = messageInput.value.trim();
         const sender = usernameInput.value.trim();
 
-        if (!message || !sender) return;
+        if (!message || !sender || !currentRoom) {
+          alert('Join a room first');
+          return;
+        }
 
-        socket.emit('message', { sender, message });
+        socket.emit('message', { room: currentRoom, sender, message });
 
         const messageEl = document.createElement('div');
         messageEl.classList.add('message', 'own');
@@ -78,6 +113,26 @@
         chatBox.scrollTop = chatBox.scrollHeight;
 
         messageInput.value = '';
+      });
+
+      leaveBtn.addEventListener('click', () => {
+        const message = messageInput.value.trim();
+        const sender = usernameInput.value.trim();
+
+        if (!sender || !currentRoom) {
+          alert('Join a room first');
+          return;
+        }
+
+        socket.emit('leaveRoom', { room: currentRoom, sender });
+
+        const messageEl = document.createElement('div');
+        messageEl.classList.add('message');
+        messageEl.innerHTML = `<strong>You left the room:</strong> ${currentRoom}`;
+        chatBox.appendChild(messageEl);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        currentRoom = null;
       });
     </script>
   </body>
