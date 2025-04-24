@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NestJS Chat</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      #chat {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 300px;
+        overflow-y: auto;
+      }
+      .message {
+        margin-bottom: 10px;
+      }
+      .own {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Chat</h2>
+
+    <div id="chat"></div>
+
+    <input
+      type="text"
+      id="username"
+      placeholder="Username"
+      style="width: 100%; margin: 10px 0"
+    />
+    <input
+      type="text"
+      id="messageInput"
+      placeholder="Type your message..."
+      style="width: 80%"
+    />
+    <button id="sendBtn">Send</button>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+      const socket = io('http://localhost:3000'); // adjust port if needed
+
+      const chatBox = document.getElementById('chat');
+      const usernameInput = document.getElementById('username');
+      const messageInput = document.getElementById('messageInput');
+      const sendBtn = document.getElementById('sendBtn');
+
+      socket.on('connect', () => {
+        console.log('Connected:', socket.id);
+      });
+
+      // Display incoming messages
+      socket.on('message', (data) => {
+        const messageEl = document.createElement('div');
+        messageEl.classList.add('message');
+        messageEl.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+        chatBox.appendChild(messageEl);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+      sendBtn.addEventListener('click', () => {
+        const message = messageInput.value.trim();
+        const sender = usernameInput.value.trim();
+
+        if (!message || !sender) return;
+
+        socket.emit('message', { sender, message });
+
+        const messageEl = document.createElement('div');
+        messageEl.classList.add('message', 'own');
+        messageEl.innerHTML = `<strong>You:</strong> ${message}`;
+        chatBox.appendChild(messageEl);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        messageInput.value = '';
+      });
+    </script>
+  </body>
+</html>
