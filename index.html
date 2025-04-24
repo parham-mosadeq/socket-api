@@ -3,55 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <title>NestJS Chat Rooms</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        padding: 20px;
-      }
-      #chat {
-        border: 1px solid #ccc;
-        padding: 10px;
-        height: 300px;
-        overflow-y: auto;
-        margin-bottom: 10px;
-      }
-      .message {
-        margin-bottom: 10px;
-      }
-      .own {
-        color: green;
-      }
-    </style>
+    <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
     <h2>Chat with Rooms</h2>
 
-    <input
-      type="text"
-      id="username"
-      placeholder="Username"
-      style="width: 100%; margin-bottom: 10px"
-    />
-    <input
-      type="text"
-      id="room"
-      placeholder="Room name (e.g. general)"
-      style="width: 100%; margin-bottom: 10px"
-    />
-    <button id="joinBtn" style="width: 100%; margin-bottom: 10px">
-      Join Room
-    </button>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="text" id="room" placeholder="Room name (e.g. general)" />
+    <button id="joinBtn">Join Room</button>
 
     <div id="chat"></div>
 
-    <input
-      type="text"
-      id="messageInput"
-      placeholder="Type your message..."
-      style="width: 80%"
-    />
+    <input type="text" id="messageInput" placeholder="Type your message..." />
     <button id="sendBtn">Send</button>
-    <button id="leaveBtn">Leave room</button>
+    <button id="leaveBtn">Leave</button>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
